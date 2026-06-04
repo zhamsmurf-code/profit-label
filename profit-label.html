@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profit Label</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #13131a;
+    --border: #2a2a3a;
+    --accent: #00e5a0;
+    --accent2: #7c5cfc;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --danger: #ff4d6d;
+    --warn: #ffd166;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+
+  /* background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; width: 100%; max-width: 520px; }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p { color: var(--muted); font-size: .85rem; margin-top: 4px; font-family: 'Space Mono', monospace; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: .7rem;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* date display */
+  .date-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.4fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .date-box {
+    background: #1a1a26;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .date-box .val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+    display: block;
+  }
+  .date-box .lbl {
+    font-size: .65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* form */
+  .form-group { margin-bottom: 14px; }
+  label {
+    display: block;
+    font-size: .72rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    background: #1a1a26;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: .95rem;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus { border-color: var(--accent); }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .profit-display {
+    background: linear-gradient(135deg, rgba(0,229,160,.08), rgba(124,92,252,.08));
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    margin-top: 8px;
+  }
+  .profit-display .amount {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+  }
+  .profit-display.loss .amount { color: var(--danger); }
+  .profit-display .sublabel {
+    font-size: .7rem;
+    color: var(--muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn-add {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 14px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-add:hover { opacity: .9; }
+  .btn-add:active { transform: scale(.98); }
+
+  /* history */
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .btn-clear {
+    background: none;
+    border: 1px solid var(--danger);
+    border-radius: 6px;
+    color: var(--danger);
+    font-size: .7rem;
+    font-family: 'Space Mono', monospace;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-clear:hover { background: rgba(255,77,109,.1); }
+
+  .entry {
+    background: #1a1a26;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideIn .25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .entry .meta { font-size: .78rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .entry .meta strong { color: var(--text); display: block; font-size: .85rem; }
+  .entry .profit-val {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .entry .profit-val.pos { color: var(--accent); }
+  .entry .profit-val.neg { color: var(--danger); }
+
+  /* summary */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .sum-box {
+    background: #1a1a26;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .sum-box .sv {
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+  }
+  .sum-box .sl { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+  .green { color: var(--accent); }
+  .red { color: var(--danger); }
+  .yellow { color: var(--warn); }
+
+  .empty { text-align: center; color: var(--muted); font-size: .8rem; font-family: 'Space Mono', monospace; padding: 20px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>💹 Profit Label</h1>
+    <p>Catat bersih profit harian lo</p>
+  </header>
+
+  <!-- Date Auto -->
+  <div class="card">
+    <div class="card-title">📅 Tanggal Otomatis</div>
+    <div class="date-display">
+      <div class="date-box"><span class="val" id="dHari">—</span><span class="lbl">Hari</span></div>
+      <div class="date-box"><span class="val" id="dTgl">—</span><span class="lbl">Tanggal</span></div>
+      <div class="date-box"><span class="val" id="dBln">—</span><span class="lbl">Bulan</span></div>
+      <div class="date-box"><span class="val" id="dThn">—</span><span class="lbl">Tahun</span></div>
+    </div>
+
+    <!-- Input -->
+    <div class="row2">
+      <div class="form-group">
+        <label>Pemasukan (Rp)</label>
+        <input type="number" id="income" placeholder="0" min="0" oninput="calcProfit()">
+      </div>
+      <div class="form-group">
+        <label>Pengeluaran (Rp)</label>
+        <input type="number" id="expense" placeholder="0" min="0" oninput="calcProfit()">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Keterangan (opsional)</label>
+      <input type="text" id="note" placeholder="contoh: Growtopia DL, Jual WL, dll">
+    </div>
+
+    <div class="profit-display" id="profitBox">
+      <div class="amount" id="profitAmt">Rp 0</div>
+      <div class="sublabel">Bersih Profit</div>
+    </div>
+
+    <button class="btn-add" onclick="addEntry()">+ Simpan Catatan</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="card" id="summaryCard" style="display:none">
+    <div class="card-title">📊 Ringkasan</div>
+    <div class="summary">
+      <div class="sum-box"><div class="sv green" id="sTotalProfit">Rp 0</div><div class="sl">Total Profit</div></div>
+      <div class="sum-box"><div class="sv yellow" id="sCount">0</div><div class="sl">Entri</div></div>
+      <div class="sum-box"><div class="sv green" id="sBestDay">—</div><div class="sl">Hari Terbaik</div></div>
+      <div class="sum-box"><div class="sv" id="sAvg">Rp 0</div><div class="sl">Rata-rata/hari</div></div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card">
+    <div class="history-header">
+      <div class="card-title" style="margin:0">🗂️ Riwayat</div>
+      <button class="btn-clear" onclick="clearAll()">Hapus Semua</button>
+    </div>
+    <div id="historyList"><div class="empty">Belum ada catatan</div></div>
+  </div>
+</div>
+
+<script>
+  const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+  function updateDate() {
+    const now = new Date();
+    document.getElementById('dHari').textContent = HARI[now.getDay()];
+    document.getElementById('dTgl').textContent = String(now.getDate()).padStart(2,'0');
+    document.getElementById('dBln').textContent = BULAN[now.getMonth()];
+    document.getElementById('dThn').textContent = now.getFullYear();
+  }
+
+  function fmt(n) {
+    return 'Rp ' + Math.abs(n).toLocaleString('id-ID');
+  }
+
+  function calcProfit() {
+    const inc = parseFloat(document.getElementById('income').value) || 0;
+    const exp = parseFloat(document.getElementById('expense').value) || 0;
+    const profit = inc - exp;
+    const box = document.getElementById('profitBox');
+    const amt = document.getElementById('profitAmt');
+    amt.textContent = (profit < 0 ? '- ' : '') + fmt(profit);
+    box.className = 'profit-display' + (profit < 0 ? ' loss' : '');
+  }
+
+  function getEntries() {
+    return JSON.parse(localStorage.getItem('profitEntries') || '[]');
+  }
+  function saveEntries(e) {
+    localStorage.setItem('profitEntries', JSON.stringify(e));
+  }
+
+  function addEntry() {
+    const inc = parseFloat(document.getElementById('income').value) || 0;
+    const exp = parseFloat(document.getElementById('expense').value) || 0;
+    const note = document.getElementById('note').value.trim();
+    const profit = inc - exp;
+    const now = new Date();
+
+    const entry = {
+      id: Date.now(),
+      hari: HARI[now.getDay()],
+      tanggal: now.getDate(),
+      bulan: BULAN[now.getMonth()],
+      tahun: now.getFullYear(),
+      income: inc,
+      expense: exp,
+      profit,
+      note,
+      ts: now.toISOString()
+    };
+
+    const entries = getEntries();
+    entries.unshift(entry);
+    saveEntries(entries);
+    renderHistory();
+    renderSummary();
+
+    // reset
+    document.getElementById('income').value = '';
+    document.getElementById('expense').value = '';
+    document.getElementById('note').value = '';
+    calcProfit();
+  }
+
+  function renderHistory() {
+    const entries = getEntries();
+    const el = document.getElementById('historyList');
+    if (!entries.length) { el.innerHTML = '<div class="empty">Belum ada catatan</div>'; return; }
+    el.innerHTML = entries.map(e => `
+      <div class="entry">
+        <div class="meta">
+          <strong>${e.hari}, ${String(e.tanggal).padStart(2,'0')} ${e.bulan} ${e.tahun}</strong>
+          ${e.note ? e.note : '<span style="color:#6b6b80">–</span>'}
+        </div>
+        <div class="profit-val ${e.profit >= 0 ? 'pos' : 'neg'}">
+          ${e.profit < 0 ? '-' : '+'}${fmt(e.profit)}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderSummary() {
+    const entries = getEntries();
+    const card = document.getElementById('summaryCard');
+    if (!entries.length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+
+    const total = entries.reduce((s, e) => s + e.profit, 0);
+    const best = entries.reduce((a, b) => b.profit > a.profit ? b : a);
+    const avg = total / entries.length;
+
+    document.getElementById('sTotalProfit').textContent = (total < 0 ? '-' : '') + fmt(total);
+    document.getElementById('sTotalProfit').className = 'sv ' + (total >= 0 ? 'green' : 'red');
+    document.getElementById('sCount').textContent = entries.length;
+    document.getElementById('sBestDay').textContent = best.hari;
+    document.getElementById('sAvg').textContent = (avg < 0 ? '-' : '') + fmt(avg);
+    document.getElementById('sAvg').className = 'sv ' + (avg >= 0 ? 'green' : 'red');
+  }
+
+  function clearAll() {
+    if (confirm('Hapus semua catatan?')) {
+      localStorage.removeItem('profitEntries');
+      renderHistory();
+      renderSummary();
+    }
+  }
+
+  updateDate();
+  setInterval(updateDate, 60000);
+  renderHistory();
+  renderSummary();
+</script>
+</body>
+</html>
